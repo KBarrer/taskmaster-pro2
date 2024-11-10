@@ -172,6 +172,9 @@ $(".list-group").on("change", "input[type='text']", function() {
 
   // replace input with span element
   $(this).replaceWith(taskSpan);
+
+  // Pass task's <li> element into auditTask() to check new due date
+  auditTask($(taskSpan).closest(".list-group-item"));
 });
 
 $(".card .list-group").sortable({
@@ -209,7 +212,25 @@ $(".card .list-group").sortable({
   // update array on tasks object and save
   tasks[arrName] = tempArr;
   saveTasks();
-  } 
+  },
+  
+  activate: function(event) {
+    $(this).addClass("dropover");
+    $(".bottom-trash").addClass("bottom-trash-drag");
+  },
+
+  deactivate: function(event) {
+    $(this).removeClass("dropover");
+    $(".bottom-trash").removeClass("bottom-trash-drag");
+  },
+
+  over: function(event) {
+    $(event.target).addClass("dropover-active");
+  },
+  
+  out: function(event) {
+    $(event.target).removeClass("dropover-active");
+  }
 });
 
 // modal was triggered
@@ -230,7 +251,7 @@ $("#modalDueDate").datepicker({
 });
 
 // save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
+$("#task-form-modal .btn-save").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
@@ -259,9 +280,11 @@ $("#trash").droppable({
     console.log("drop");
   },
   over: function(event, ui) {
+    $(".bottom-trash").addClass("bottom-trash-active");
     console.log("over");
   },
   out: function(event, ui) {
+    $(".bottom-trash").removeClass("bottom-trash-active")
     console.log("out");
   }
 });
@@ -277,5 +300,11 @@ $("#remove-tasks").on("click", function() {
 
 // load tasks for the first time
 loadTasks();
+
+setInterval(function() {
+  $(".card .list-group-item").each(function(index, el) {
+    auditTask(el);
+  });
+}, (1000 * 60) * 30);
 
 
